@@ -100,11 +100,12 @@ func Claim(ctx context.Context, db *gorm.DB, packet *Packet, userID int64) (*Rec
 		r.Amount = packet.RemainAmount.Div(decimal.NewFromInt(packet.RemainCount))
 	case packet.Mode == Luck:
 		// 手气红包，在最小值和剩余平均值 * 2 之间随机选取
-		// 要注意最大值，需要至少给剩下的人留最小值
+		// 要注意最大值，需要至少给剩下的人留一个最小值
+		avg := packet.RemainAmount.Div(decimal.NewFromInt(packet.RemainCount))
 		min := minimumRecordAmount
-		max := packet.RemainAmount.Sub(decimal.NewFromInt(packet.RemainCount - 1).Mul(min))
-		if avg := packet.RemainAmount.Div(decimal.NewFromInt(packet.RemainCount)); avg.Add(avg).LessThan(max) {
-			max = avg.Add(avg)
+		max := avg.Add(avg)
+		if Max := packet.RemainAmount.Sub(decimal.NewFromInt(packet.RemainCount - 1).Mul(min)); max.GreaterThan(Max) {
+			max = Max
 		}
 
 		random := decimal.NewFromFloat(rand.Float64())
