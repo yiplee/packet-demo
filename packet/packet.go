@@ -159,5 +159,9 @@ func transaction(db *gorm.DB, fn func(tx *gorm.DB) error) error {
 	tx := db.Begin()
 	defer tx.RollbackUnlessCommitted()
 
-	return fn(tx)
+	if err := fn(tx); err != nil {
+		return err
+	}
+
+	return tx.Commit().Error
 }
